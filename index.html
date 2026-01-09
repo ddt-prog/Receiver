@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشغل روابط الحفظ والتشغيل</title>
+    <title>مشغل الروابط المحفوظة</title>
     <style>
         body { background-color: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .box { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -12,66 +12,79 @@
         input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
         .btns-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .btn-save { flex: 1; background: #2980b9; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-play { flex: 1; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; opacity: 0.5; }
+        .btn-play { flex: 1; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-clear { background: #c0392b; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 5px; }
         video { width: 100%; margin-top: 20px; border-radius: 10px; display: none; background: #000; border: 2px solid #27ae60; }
-        .footer { margin-top: 15px; font-size: 11px; color: #777; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <h2 style="text-align: center; font-size: 1.2rem;">نظام الحفظ والتشغيل</h2>
+        <h2 style="text-align: center; font-size: 1.2rem;">حفظ الرابط بشكل دائم</h2>
         
         <div id="status" class="status-badge">الحالة: بانتظار الرابط...</div>
 
         <input type="text" id="videoUrl" placeholder="أدخل الرابط هنا...">
         
         <div class="btns-row">
-            <button class="btn-save" onclick="saveLink()">1. حفظ الرابط</button>
-            <button id="playBtn" class="btn-play" onclick="startPlayer()" disabled>2. تشغيل الفيديو</button>
+            <button class="btn-save" onclick="saveLink()">تعديل وحفظ</button>
+            <button class="btn-play" onclick="startPlayer()">تشغيل المحفوظ</button>
         </div>
+        
+        <button class="btn-clear" onclick="clearStorage()">مسح الرابط المحفوظ</button>
 
-        <video id="mainPlayer" controls playsinline>
-            متصفحك لا يدعم التشغيل.
-        </video>
-
-        <div class="footer">
-            خطوات العمل: الصق الرابط <br> اضغط حفظ <br> ثم اضغط تشغيل.
-        </div>
+        <video id="mainPlayer" controls playsinline></video>
     </div>
 
     <script>
-        let savedLink = ""; // متغير لتخزين الرابط المحفوظ
+        // عند تحميل الصفحة، ابحث عن رابط محفوظ مسبقاً
+        window.onload = function() {
+            const saved = localStorage.getItem('myVideoLink');
+            if (saved) {
+                document.getElementById('videoUrl').value = saved;
+                updateStatus(true);
+            }
+        };
 
         function saveLink() {
             const inputVal = document.getElementById('videoUrl').value.trim();
-            const statusBadge = document.getElementById('status');
-            const playBtn = document.getElementById('playBtn');
-
             if (inputVal !== "") {
-                savedLink = inputVal; // حفظ الرابط في الذاكرة
-                statusBadge.innerText = "الحالة: تم الحفظ بنجاح ✅";
-                statusBadge.classList.add('ready');
-                
-                // تفعيل زر التشغيل
-                playBtn.disabled = false;
-                playBtn.style.opacity = "1";
-                
-                alert("تم حفظ الرابط! يمكنك الآن الضغط على تشغيل.");
+                localStorage.setItem('myVideoLink', inputVal); // الحفظ في ذاكرة المتصفح
+                updateStatus(true);
+                alert("تم الحفظ! الرابط سيبقى هنا حتى لو حدثت الصفحة.");
             } else {
-                alert("يرجى وضع رابط أولاً قبل الحفظ.");
+                alert("يرجى إدخال رابط.");
             }
         }
 
         function startPlayer() {
+            const saved = localStorage.getItem('myVideoLink');
             const player = document.getElementById('mainPlayer');
             
-            if (savedLink !== "") {
-                player.src = savedLink;
+            if (saved) {
+                player.src = saved;
                 player.style.display = 'block';
                 player.play();
             } else {
-                alert("عذراً، لا يوجد رابط محفوظ للتشغيل!");
+                alert("لا يوجد رابط محفوظ للتشغيل!");
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('myVideoLink');
+            document.getElementById('videoUrl').value = "";
+            updateStatus(false);
+            alert("تم مسح الرابط.");
+        }
+
+        function updateStatus(isReady) {
+            const statusBadge = document.getElementById('status');
+            if (isReady) {
+                statusBadge.innerText = "الحالة: يوجد رابط محفوظ ✅";
+                statusBadge.classList.add('ready');
+            } else {
+                statusBadge.innerText = "الحالة: لا يوجد رابط";
+                statusBadge.classList.remove('ready');
             }
         }
     </script>

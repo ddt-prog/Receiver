@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>استقبال الرابط</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .result-box { padding: 20px; border: 2px dashed #28a745; display: inline-block; margin-top: 20px; }
+        a { color: #007bff; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h2>الرابط المستلم:</h2>
+    <div class="result-box">
+        <p id="displayLink">جاري انتظار الرابط...</p>
+    </div>
+    <br><br>
+    <a href="index.html">العودة لصفحة الإرسال</a>
+
+    <script>
+        // كود لاستخراج الرابط من الـ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoUrl = urlParams.get('url');
+
+        if (videoUrl) {
+            document.getElementById('displayLink').innerHTML = 
+                `تم استقبال الرابط بنجاح: <br> <a href="${videoUrl}" target="_blank">${videoUrl}</a>`;
+        }
+    </script>
+</body>
+</html>

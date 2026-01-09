@@ -3,116 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مستقبل الروابط</title>
+    <title>مشغل روابط الحفظ والتشغيل</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: #333;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
-        }
-        h2 { color: #007bff; margin-bottom: 20px; }
-        .video-container {
-            margin-top: 20px;
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            display: none; /* يظهر فقط إذا كان الرابط يوتيوب */
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            border-radius: 10px;
-            border: none;
-        }
-        .link-box {
-            word-break: break-all;
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border: 1px solid #ddd;
-        }
-        .btn-back {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: #666;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .btn-back:hover { color: #007bff; }
+        body { background-color: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .box { width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status-badge { display: inline-block; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-bottom: 10px; background: #444; }
+        .ready { background: #27ae60; color: white; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
+        .btns-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-save { flex: 1; background: #2980b9; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-play { flex: 1; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; opacity: 0.5; }
+        video { width: 100%; margin-top: 20px; border-radius: 10px; display: none; background: #000; border: 2px solid #27ae60; }
+        .footer { margin-top: 15px; font-size: 11px; color: #777; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>الرابط المستلم</h2>
-    
-    <div id="displayArea">
-        <p>جاري فحص الرابط...</p>
-    </div>
-
-    <div id="videoWrapper" class="video-container">
-        <iframe id="videoPlayer" src="" allowfullscreen></iframe>
-    </div>
-
-    <div id="linkText" class="link-box" style="display:none;"></div>
-
-    <a href="index.html" class="btn-back">⬅ العودة لصفحة الإرسال</a>
-</div>
-
-<script>
-    // 1. استخراج الرابط من الـ URL
-    const params = new URLSearchParams(window.location.search);
-    const rawUrl = params.get('url');
-
-    const displayArea = document.getElementById('displayArea');
-    const videoWrapper = document.getElementById('videoWrapper');
-    const videoPlayer = document.getElementById('videoPlayer');
-    const linkText = document.getElementById('linkText');
-
-    if (rawUrl) {
-        const decodedUrl = decodeURIComponent(rawUrl);
-        displayArea.innerHTML = "<strong>تم استقبال الرابط بنجاح:</strong>";
+    <div class="box">
+        <h2 style="text-align: center; font-size: 1.2rem;">نظام الحفظ والتشغيل</h2>
         
-        // عرض الرابط كنص تحت كل الظروف
-        linkText.style.display = "block";
-        linkText.innerHTML = `<a href="${decodedUrl}" target="_blank">${decodedUrl}</a>`;
+        <div id="status" class="status-badge">الحالة: بانتظار الرابط...</div>
 
-        // 2. فحص هل الرابط يتبع لليوتيوب لعرضه مباشرة
-        if (decodedUrl.includes('youtube.com') || decodedUrl.includes('youtu.be')) {
-            let videoId = "";
-            if (decodedUrl.includes('v=')) {
-                videoId = decodedUrl.split('v=')[1].split('&')[0];
-            } else if (decodedUrl.includes('youtu.be/')) {
-                videoId = decodedUrl.split('youtu.be/')[1].split('?')[0];
-            }
+        <input type="text" id="videoUrl" placeholder="أدخل الرابط هنا...">
+        
+        <div class="btns-row">
+            <button class="btn-save" onclick="saveLink()">1. حفظ الرابط</button>
+            <button id="playBtn" class="btn-play" onclick="startPlayer()" disabled>2. تشغيل الفيديو</button>
+        </div>
 
-            if (videoId) {
-                videoPlayer.src = `https://www.youtube.com/embed/${videoId}`;
-                videoWrapper.style.display = "block";
+        <video id="mainPlayer" controls playsinline>
+            متصفحك لا يدعم التشغيل.
+        </video>
+
+        <div class="footer">
+            خطوات العمل: الصق الرابط <br> اضغط حفظ <br> ثم اضغط تشغيل.
+        </div>
+    </div>
+
+    <script>
+        let savedLink = ""; // متغير لتخزين الرابط المحفوظ
+
+        function saveLink() {
+            const inputVal = document.getElementById('videoUrl').value.trim();
+            const statusBadge = document.getElementById('status');
+            const playBtn = document.getElementById('playBtn');
+
+            if (inputVal !== "") {
+                savedLink = inputVal; // حفظ الرابط في الذاكرة
+                statusBadge.innerText = "الحالة: تم الحفظ بنجاح ✅";
+                statusBadge.classList.add('ready');
+                
+                // تفعيل زر التشغيل
+                playBtn.disabled = false;
+                playBtn.style.opacity = "1";
+                
+                alert("تم حفظ الرابط! يمكنك الآن الضغط على تشغيل.");
+            } else {
+                alert("يرجى وضع رابط أولاً قبل الحفظ.");
             }
         }
-    } else {
-        displayArea.innerHTML = "<span style='color:red;'>⚠️ لم يتم العثور على رابط مستلم!</span>";
-    }
-</script>
+
+        function startPlayer() {
+            const player = document.getElementById('mainPlayer');
+            
+            if (savedLink !== "") {
+                player.src = savedLink;
+                player.style.display = 'block';
+                player.play();
+            } else {
+                alert("عذراً، لا يوجد رابط محفوظ للتشغيل!");
+            }
+        }
+    </script>
 
 </body>
 </html>
